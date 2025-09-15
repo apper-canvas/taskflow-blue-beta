@@ -80,13 +80,15 @@ const sortTasks = (tasksToSort) => {
 
 const handleCreateTask = async (formData) => {
     try {
-      const newTask = await taskService.create(formData)
+      const result = await taskService.create(formData)
       // Reload all tasks to get parent-child relationships properly
       await loadTasks()
       setIsModalOpen(false)
       
-      if (formData.isSubTask) {
+      if (formData.isSubTask && result.parentTask) {
         toast.success("Subtask and parent task created successfully!")
+      } else if (formData.isSubTask) {
+        toast.success("Subtask created successfully!")
       } else {
         toast.success("Task created successfully!")
       }

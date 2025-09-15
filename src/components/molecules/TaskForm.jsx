@@ -14,11 +14,7 @@ const [formData, setFormData] = useState({
     priority: initialData?.priority || "Medium",
     projectId: initialData?.projectId || "",
     parentTaskId: initialData?.parentTaskId || "",
-    isSubTask: initialData?.isSubTask || false,
-    subtaskTitle: initialData?.subtaskTitle || "",
-    subtaskDescription: initialData?.subtaskDescription || "",
-    subtaskStatus: initialData?.subtaskStatus || "pending",
-    subtaskDueDate: initialData?.subtaskDueDate ? format(new Date(initialData.subtaskDueDate), "yyyy-MM-dd") : ""
+    isSubTask: initialData?.isSubTask || false
   })
   
   const [projects, setProjects] = useState([])
@@ -33,13 +29,55 @@ useEffect(() => {
   }, [])
 
   useEffect(() => {
-    if (formData.isSubTask) {
+if (formData.isSubTask) {
       loadParentTasks()
     } else {
       setParentTasks([])
       setFormData(prev => ({ ...prev, parentTaskId: "" }))
     }
   }, [formData.isSubTask])
+
+  // Auto-save parent task when Create as Subtask is checked
+  const handleSubtaskToggle = async (checked) => {
+    setFormData(prev => ({ ...prev, isSubTask: checked }))
+    
+    if (checked && formData.title.trim()) {
+      try {
+        // Auto-save current form data as parent task
+        const parentTaskData = {
+          title: formData.title,
+          description: formData.description,
+          dueDate: formData.dueDate,
+          priority: formData.priority,
+          projectId: formData.projectId,
+          isSubTask: false
+        }
+        
+        const result = await taskService.create(parentTaskData)
+        
+        // Update parent tasks list and select the newly created parent
+        await loadParentTasks()
+        setFormData(prev => ({ 
+          ...prev, 
+          parentTaskId: result.parentTask.Id.toString(),
+          title: "", // Clear title for subtask
+          description: "" // Clear description for subtask
+        }))
+        
+        // Show success message
+        if (window.toast) {
+          window.toast.success("Parent task auto-saved successfully!")
+        }
+      } catch (error) {
+        console.error('Failed to auto-save parent task:', error)
+        if (window.toast) {
+          window.toast.error("Failed to auto-save parent task")
+        }
+        // Revert checkbox if auto-save failed
+        setFormData(prev => ({ ...prev, isSubTask: false }))
+      }
+    }
+  }
 
   const loadProjects = async () => {
     try {
@@ -67,7 +105,7 @@ useEffect(() => {
   }
 
 const handleChange = (field) => (e) => {
-    const value = field === 'isSubTask' ? e.target.checked : e.target.value
+    const value = e.target.value
     
     setFormData(prev => ({
       ...prev,
@@ -163,12 +201,12 @@ const validateForm = () => {
         ))}
       </Select>
       
-      <div className="flex items-center space-x-2 p-4 bg-gray-50 rounded-lg">
+<div className="flex items-center space-x-2 p-4 bg-gray-50 rounded-lg">
         <input
           type="checkbox"
           id="isSubTask"
           checked={formData.isSubTask}
-          onChange={handleChange("isSubTask")}
+          onChange={(e) => handleSubtaskToggle(e.target.checked)}
           className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500"
         />
         <label htmlFor="isSubTask" className="text-sm font-medium text-gray-700">
@@ -176,81 +214,23 @@ const validateForm = () => {
         </label>
       </div>
       
-      {formData.isSubTask && (
-        <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h4 className="text-sm font-medium text-blue-900 mb-3">Subtask Details</h4>
-          
-          <Input
-            label="Subtask Title"
-            placeholder="Enter subtask title"
-            value={formData.subtaskTitle}
-            onChange={handleChange("subtaskTitle")}
-            error={errors.subtaskTitle}
-            required={formData.isSubTask}
-          />
-          
-          <Textarea
-            label="Subtask Description"
-            placeholder="Enter subtask description (optional)"
-            value={formData.subtaskDescription}
-            onChange={handleChange("subtaskDescription")}
-            rows={3}
-          />
-          
-          <div className="grid grid-cols-2 gap-4">
-            <Select
-              label="Subtask Status"
-              value={formData.subtaskStatus}
-              onChange={handleChange("subtaskStatus")}
-            >
-              <option value="pending">Pending</option>
-              <option value="in-progress">In Progress</option>
-              <option value="completed">Completed</option>
-            </Select>
-            
-            <Input
-              label="Subtask Due Date"
-              type="date"
-              value={formData.subtaskDueDate}
-              onChange={handleChange("subtaskDueDate")}
-              error={errors.subtaskDueDate}
-            />
-          </div>
-        </div>
+{formData.isSubTask && (
+        <Select
+          label="Parent Task"
+          value={formData.parentTaskId}
+          onChange={handleChange("parentTaskId")}
+          error={errors.parentTaskId}
+          disabled={isLoadingParentTasks}
+          required
+        >
+          <option value="">Select parent task</option>
+          {parentTasks.map(task => (
+            <option key={task.Id} value={task.Id}>
+              {task.title}
+            </option>
+          ))}
+        </Select>
       )}
-      
-      <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            id="isSubTask"
-            checked={formData.isSubTask}
-            onChange={handleChange("isSubTask")}
-            className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 focus:ring-2"
-          />
-          <label htmlFor="isSubTask" className="text-sm font-medium text-gray-700">
-            This is a sub-task
-          </label>
-        </div>
-        
-        {formData.isSubTask && (
-          <Select
-            label="Parent Task"
-            value={formData.parentTaskId}
-            onChange={handleChange("parentTaskId")}
-            error={errors.parentTaskId}
-            disabled={isLoadingParentTasks}
-            required
-          >
-            <option value="">Select parent task</option>
-            {parentTasks.map(task => (
-              <option key={task.Id} value={task.Id}>
-                {task.title}
-              </option>
-            ))}
-          </Select>
-        )}
-      </div>
       
       <div className="flex justify-end gap-3 pt-4">
         <Button type="button" variant="secondary" onClick={onCancel}>

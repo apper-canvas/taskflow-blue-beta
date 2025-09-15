@@ -59,11 +59,33 @@ async create(taskData) {
       setTimeout(() => {
         const tasks = this.getData()
         let maxId = Math.max(...tasks.map(t => t.Id), 0)
-        let parentTaskId = taskData.parentTaskId || null
+        let parentTask = null
         
-        // If creating a subtask without a parent, create parent task first
+        // If not creating a subtask, create a regular task
+        if (!taskData.isSubTask) {
+          const newTask = {
+            Id: maxId + 1,
+            title: taskData.title,
+            description: taskData.description || "",
+            dueDate: taskData.dueDate,
+            priority: taskData.priority,
+            status: "pending",
+            projectId: taskData.projectId || null,
+            parentTaskId: null,
+            isSubTask: false,
+            createdAt: new Date().toISOString(),
+            completedAt: null
+          }
+          const updatedTasks = [newTask, ...tasks]
+          this.saveData(updatedTasks)
+          resolve({ ...newTask, parentTask: null })
+          return
+        }
+        
+        // For subtasks, create parent task if no parentTaskId provided
+        let parentTaskId = taskData.parentTaskId || null
         if (taskData.isSubTask && !parentTaskId) {
-          const parentTask = {
+          parentTask = {
             Id: maxId + 1,
             title: taskData.title,
             description: taskData.description || "",
@@ -83,11 +105,11 @@ async create(taskData) {
         
         const newTask = {
           Id: maxId + 1,
-          title: taskData.isSubTask ? (taskData.subtaskTitle || taskData.title) : taskData.title,
-          description: taskData.isSubTask ? (taskData.subtaskDescription || taskData.description || "") : (taskData.description || ""),
-          dueDate: taskData.isSubTask ? (taskData.subtaskDueDate || taskData.dueDate) : taskData.dueDate,
+          title: taskData.title,
+          description: taskData.description || "",
+          dueDate: taskData.dueDate,
           priority: taskData.priority,
-          status: taskData.isSubTask ? (taskData.subtaskStatus || "pending") : "pending",
+          status: "pending",
           projectId: taskData.projectId || null,
           parentTaskId: parentTaskId,
           isSubTask: taskData.isSubTask || false,
@@ -96,7 +118,7 @@ async create(taskData) {
         }
         const updatedTasks = [newTask, ...tasks]
         this.saveData(updatedTasks)
-        resolve({ ...newTask })
+        resolve({ ...newTask, parentTask })
       }, 300)
     })
   }
