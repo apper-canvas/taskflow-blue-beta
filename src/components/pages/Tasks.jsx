@@ -223,12 +223,12 @@ const handleSortChange = (value) => {
             value={`${sortBy}-${sortOrder}`}
             onChange={(e) => handleSortChange(e.target.value)}
             className="w-full sm:w-64"
-          >
+>
 <option value="createdAt-desc">Newest</option>
             <option value="createdAt-asc">Oldest</option>
             <option value="priority-desc">High</option>
             <option value="priority-asc">Low</option>
-            <option value="dueDate-desc">Latest</option>
+            <option value="dueDate-desc">Latest(Due Date)</option>
           </Select>
         </div>
         <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 w-full sm:w-auto">
