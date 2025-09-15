@@ -227,6 +227,8 @@ const handleSortChange = (value) => {
 <option value="createdAt-desc">Newest</option>
             <option value="createdAt-asc">Oldest</option>
             <option value="priority-desc">High</option>
+            <option value="priority-medium-desc">Medium</option>
+            <option value="priority-medium-asc">Medium (Low to High)</option>
             <option value="priority-asc">Low</option>
             <option value="dueDate-desc">Latest(Due Date)</option>
           </Select>
