@@ -1,0 +1,82 @@
+[
+  {
+    "Id": 1,
+    "title": "Complete project proposal",
+    "description": "Finalize the project proposal document with budget estimates and timeline",
+    "dueDate": "2024-01-15",
+    "priority": "High",
+    "status": "pending",
+    "createdAt": "2024-01-10T09:00:00.000Z",
+    "completedAt": null
+  },
+  {
+    "Id": 2,
+    "title": "Review team performance",
+    "description": "Conduct quarterly performance reviews for all team members",
+    "dueDate": "2024-01-18",
+    "priority": "Medium",
+    "status": "pending",
+    "createdAt": "2024-01-09T14:30:00.000Z",
+    "completedAt": null
+  },
+  {
+    "Id": 3,
+    "title": "Update website content",
+    "description": "Refresh the homepage content and add new service descriptions",
+    "dueDate": "2024-01-12",
+    "priority": "Low",
+    "status": "completed",
+    "createdAt": "2024-01-08T11:15:00.000Z",
+    "completedAt": "2024-01-11T16:45:00.000Z"
+  },
+  {
+    "Id": 4,
+    "title": "Prepare presentation slides",
+    "description": "Create slides for the monthly board meeting presentation",
+    "dueDate": "2024-01-20",
+    "priority": "High",
+    "status": "pending",
+    "createdAt": "2024-01-11T08:20:00.000Z",
+    "completedAt": null
+  },
+  {
+    "Id": 5,
+    "title": "Database backup",
+    "description": "Perform routine database backup and verify data integrity",
+    "dueDate": "2024-01-16",
+    "priority": "Medium",
+    "status": "pending",
+    "createdAt": "2024-01-10T13:00:00.000Z",
+    "completedAt": null
+  },
+  {
+    "Id": 6,
+    "title": "Client feedback review",
+    "description": "Analyze client feedback from last quarter and prepare action items",
+    "dueDate": "2024-01-08",
+    "priority": "High",
+    "status": "pending",
+    "createdAt": "2024-01-07T10:30:00.000Z",
+    "completedAt": null
+  },
+  {
+    "Id": 7,
+    "title": "Equipment maintenance",
+    "description": "Schedule and oversee routine maintenance for office equipment",
+    "dueDate": "2024-01-25",
+    "priority": "Low",
+    "status": "pending",
+    "createdAt": "2024-01-09T15:45:00.000Z",
+    "completedAt": null
+  },
+  {
+    "Id": 8,
+    "title": "Marketing campaign analysis",
+    "description": "Evaluate the performance of Q4 marketing campaigns and ROI",
+    "dueDate": "2024-01-14",
+    "priority": "Medium",
+    "status": "completed",
+    "createdAt": "2024-01-08T09:00:00.000Z",
+    "completedAt": "2024-01-13T17:20:00.000Z"
+  }
+]
