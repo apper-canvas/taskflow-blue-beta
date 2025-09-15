@@ -63,7 +63,7 @@ if (formData.isSubTask) {
           await loadParentTasks()
           setFormData(prev => ({ 
             ...prev, 
-            parentTaskId: result.parentTask.Id.toString(),
+parentTaskId: result.parentTask?.Id?.toString() ?? "",
             title: "", // Clear title for subtask
             description: "" // Clear description for subtask
           }))
