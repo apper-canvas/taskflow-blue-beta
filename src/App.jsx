@@ -1,11 +1,13 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
-import { ToastContainer } from "react-toastify"
-import Layout from "@/components/organisms/Layout"
-import Dashboard from "@/components/pages/Dashboard"
-import Tasks from "@/components/pages/Tasks"
-import Projects from "@/components/pages/Projects"
-import Calendar from "@/components/pages/Calendar"
-import Analytics from "@/components/pages/Analytics"
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import ProjectDetail from "@/components/pages/ProjectDetail";
+import React from "react";
+import Tasks from "@/components/pages/Tasks";
+import Analytics from "@/components/pages/Analytics";
+import Calendar from "@/components/pages/Calendar";
+import Dashboard from "@/components/pages/Dashboard";
+import Projects from "@/components/pages/Projects";
+import Layout from "@/components/organisms/Layout";
 
 function App() {
   return (
@@ -16,7 +18,8 @@ function App() {
             <Route index element={<Navigate to="/tasks" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="tasks" element={<Tasks />} />
-            <Route path="projects" element={<Projects />} />
+<Route path="projects" element={<Projects />} />
+            <Route path="projects/:id" element={<ProjectDetail />} />
             <Route path="calendar" element={<Calendar />} />
             <Route path="analytics" element={<Analytics />} />
           </Route>

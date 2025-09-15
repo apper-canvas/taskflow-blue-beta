@@ -1,0 +1,44 @@
+[
+  {
+    "Id": 1,
+    "title": "Website Redesign",
+    "description": "Complete overhaul of company website with modern design and improved user experience",
+    "color": "#3b82f6",
+    "createdAt": "2024-01-15T08:30:00Z"
+  },
+  {
+    "Id": 2,
+    "title": "Mobile App Development",
+    "description": "Native mobile application for iOS and Android platforms with core features",
+    "color": "#10b981",
+    "createdAt": "2024-01-10T14:20:00Z"
+  },
+  {
+    "Id": 3,
+    "title": "Marketing Campaign Q1",
+    "description": "Strategic marketing initiatives for Q1 including social media, content, and advertising",
+    "color": "#f59e0b",
+    "createdAt": "2024-01-05T09:15:00Z"
+  },
+  {
+    "Id": 4,
+    "title": "API Integration",
+    "description": "Integration with third-party APIs for enhanced functionality and data synchronization",
+    "color": "#8b5cf6",
+    "createdAt": "2024-01-20T11:45:00Z"
+  },
+  {
+    "Id": 5,
+    "title": "User Experience Research",
+    "description": "Comprehensive user research and testing to improve product usability and satisfaction",
+    "color": "#ec4899",
+    "createdAt": "2024-01-12T16:30:00Z"
+  },
+  {
+    "Id": 6,
+    "title": "Database Migration",
+    "description": "Migration of legacy database to modern cloud infrastructure with improved performance",
+    "color": "#14b8a6",
+    "createdAt": "2024-01-18T13:20:00Z"
+  }
+]

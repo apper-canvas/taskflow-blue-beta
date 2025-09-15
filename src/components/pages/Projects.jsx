@@ -1,7 +1,82 @@
+import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
+import { toast } from "react-toastify"
+import Button from "@/components/atoms/Button"
+import Modal from "@/components/molecules/Modal"
+import ProjectForm from "@/components/molecules/ProjectForm"
+import Loading from "@/components/ui/Loading"
+import Error from "@/components/ui/Error"
+import Empty from "@/components/ui/Empty"
 import ApperIcon from "@/components/ApperIcon"
-
+import { projectService } from "@/services/api/projectService"
+import { taskService } from "@/services/api/taskService"
 const Projects = () => {
+  const navigate = useNavigate()
+  const [projects, setProjects] = useState([])
+  const [tasks, setTasks] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true)
+      setError("")
+      const [projectsData, tasksData] = await Promise.all([
+        projectService.getAll(),
+        taskService.getAll()
+      ])
+      setProjects(projectsData)
+      setTasks(tasksData)
+    } catch (err) {
+      setError(err.message || "Failed to load projects")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const getProjectStats = (projectId) => {
+    const projectTasks = tasks.filter(task => task.projectId === projectId)
+    const completedTasks = projectTasks.filter(task => task.status === "completed")
+    const completionPercentage = projectTasks.length > 0 
+      ? Math.round((completedTasks.length / projectTasks.length) * 100) 
+      : 0
+    
+    return {
+      totalTasks: projectTasks.length,
+      completedTasks: completedTasks.length,
+      completionPercentage
+    }
+  }
+
+  const handleCreateProject = async (formData) => {
+    try {
+      const newProject = await projectService.create(formData)
+      setProjects(prev => [newProject, ...prev])
+      setIsModalOpen(false)
+      toast.success("Project created successfully!")
+    } catch (err) {
+      toast.error("Failed to create project")
+    }
+  }
+
+  const handleProjectClick = (projectId) => {
+    navigate(`/projects/${projectId}`)
+  }
+
+  if (isLoading) {
+    return <Loading type="cards" />
+  }
+
+  if (error) {
+    return <Error title="Failed to load projects" message={error} onRetry={loadData} />
+  }
+
   return (
     <div className="space-y-6">
       <motion.div
@@ -20,109 +95,90 @@ const Projects = () => {
         </div>
       </motion.div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white rounded-lg border border-gray-200 p-6"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <ApperIcon name="FolderPlus" size={20} className="text-green-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">Project Creation</h3>
-          </div>
-          <p className="text-secondary-600">
-            Coming soon: Create and manage projects to organize your tasks into logical groups and workflows.
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-lg border border-gray-200 p-6"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <ApperIcon name="GitBranch" size={20} className="text-blue-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">Task Organization</h3>
-          </div>
-          <p className="text-secondary-600">
-            Coming soon: Assign tasks to specific projects and track progress across different workstreams.
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white rounded-lg border border-gray-200 p-6"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <ApperIcon name="BarChart3" size={20} className="text-purple-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">Project Analytics</h3>
-          </div>
-          <p className="text-secondary-600">
-            Coming soon: View project completion rates, timelines, and performance metrics for better planning.
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-white rounded-lg border border-gray-200 p-6"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-              <ApperIcon name="Users" size={20} className="text-orange-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">Team Projects</h3>
-          </div>
-          <p className="text-secondary-600">
-            Coming soon: Collaborate on projects with team members and track collective progress.
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="bg-white rounded-lg border border-gray-200 p-6"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-              <ApperIcon name="Calendar" size={20} className="text-red-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">Project Timeline</h3>
-          </div>
-          <p className="text-secondary-600">
-            Coming soon: Visualize project timelines, milestones, and critical path planning.
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="bg-white rounded-lg border border-gray-200 p-6"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-              <ApperIcon name="Archive" size={20} className="text-indigo-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">Project Templates</h3>
-          </div>
-          <p className="text-secondary-600">
-            Coming soon: Create reusable project templates to quickly set up similar workstreams.
-          </p>
-        </motion.div>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900">Your Projects</h2>
+          <p className="text-secondary-600">Manage and track your project progress</p>
+        </div>
+        <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">
+          <ApperIcon name="Plus" size={16} />
+          New Project
+        </Button>
       </div>
+
+      {projects.length === 0 ? (
+        <Empty
+          icon="Folder"
+          title="No projects yet"
+          message="Create your first project to organize your tasks and track progress effectively."
+          actionLabel="Create Project"
+          onAction={() => setIsModalOpen(true)}
+        />
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project, index) => {
+            const stats = getProjectStats(project.Id)
+            return (
+              <motion.div
+                key={project.Id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 cursor-pointer"
+                onClick={() => handleProjectClick(project.Id)}
+              >
+                <div className="flex items-start gap-3 mb-4">
+                  <div 
+                    className={`w-12 h-12 rounded-lg flex items-center justify-center`}
+                    style={{ backgroundColor: `${project.color}20` }}
+                  >
+                    <ApperIcon name="Folder" size={24} style={{ color: project.color }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold text-gray-900 truncate">{project.title}</h3>
+                    <p className="text-sm text-secondary-600 line-clamp-2">{project.description}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-secondary-600">Progress</span>
+                    <span className="font-medium text-gray-900">{stats.completionPercentage}%</span>
+                  </div>
+                  
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="h-2 rounded-full transition-all duration-300"
+                      style={{ 
+                        width: `${stats.completionPercentage}%`,
+                        backgroundColor: project.color 
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex justify-between items-center text-sm text-secondary-600">
+                    <span>{stats.totalTasks} tasks</span>
+                    <span>{stats.completedTasks} completed</span>
+                  </div>
+                </div>
+              </motion.div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Create Project Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Create New Project"
+        size="default"
+      >
+        <ProjectForm
+          onSubmit={handleCreateProject}
+          onCancel={() => setIsModalOpen(false)}
+        />
+      </Modal>
     </div>
   )
 }

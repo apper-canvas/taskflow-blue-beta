@@ -15,8 +15,10 @@ const Layout = () => {
         return { title: "Dashboard", subtitle: "Overview of your productivity" }
       case "/tasks":
         return { title: "Tasks", subtitle: "Manage and track your tasks" }
-      case "/projects":
+case "/projects":
         return { title: "Projects", subtitle: "Organize tasks by project" }
+      case location.pathname.startsWith("/projects/"):
+        return { title: "Project Details", subtitle: "View and manage project tasks" }
       case "/calendar":
         return { title: "Calendar", subtitle: "Timeline view of your tasks" }
       case "/analytics":

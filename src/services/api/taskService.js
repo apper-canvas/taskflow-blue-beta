@@ -45,6 +45,16 @@ class TaskService {
     })
   }
 
+  async getByProject(projectId) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const tasks = this.getData()
+        const projectTasks = tasks.filter(t => t.projectId === projectId)
+        resolve([...projectTasks])
+      }, 300)
+    })
+  }
+
   async create(taskData) {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -57,6 +67,7 @@ class TaskService {
           dueDate: taskData.dueDate,
           priority: taskData.priority,
           status: "pending",
+          projectId: taskData.projectId || null,
           createdAt: new Date().toISOString(),
           completedAt: null
         }
