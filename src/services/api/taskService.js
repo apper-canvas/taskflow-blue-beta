@@ -54,20 +54,42 @@ class TaskService {
     })
   }
 
-  async create(taskData) {
+async create(taskData) {
     return new Promise((resolve) => {
       setTimeout(() => {
         const tasks = this.getData()
-        const maxId = Math.max(...tasks.map(t => t.Id), 0)
+        let maxId = Math.max(...tasks.map(t => t.Id), 0)
+        let parentTaskId = taskData.parentTaskId || null
+        
+        // If creating a subtask without a parent, create parent task first
+        if (taskData.isSubTask && !parentTaskId) {
+          const parentTask = {
+            Id: maxId + 1,
+            title: taskData.title,
+            description: taskData.description || "",
+            dueDate: taskData.dueDate,
+            priority: taskData.priority,
+            status: "pending",
+            projectId: taskData.projectId || null,
+            parentTaskId: null,
+            isSubTask: false,
+            createdAt: new Date().toISOString(),
+            completedAt: null
+          }
+          tasks.unshift(parentTask)
+          parentTaskId = parentTask.Id
+          maxId++
+        }
+        
         const newTask = {
-Id: maxId + 1,
-          title: taskData.title,
-          description: taskData.description || "",
-          dueDate: taskData.dueDate,
+          Id: maxId + 1,
+          title: taskData.isSubTask ? (taskData.subtaskTitle || taskData.title) : taskData.title,
+          description: taskData.isSubTask ? (taskData.subtaskDescription || taskData.description || "") : (taskData.description || ""),
+          dueDate: taskData.isSubTask ? (taskData.subtaskDueDate || taskData.dueDate) : taskData.dueDate,
           priority: taskData.priority,
-          status: "pending",
+          status: taskData.isSubTask ? (taskData.subtaskStatus || "pending") : "pending",
           projectId: taskData.projectId || null,
-          parentTaskId: taskData.parentTaskId || null,
+          parentTaskId: parentTaskId,
           isSubTask: taskData.isSubTask || false,
           createdAt: new Date().toISOString(),
           completedAt: null

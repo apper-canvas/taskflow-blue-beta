@@ -14,7 +14,11 @@ const [formData, setFormData] = useState({
     priority: initialData?.priority || "Medium",
     projectId: initialData?.projectId || "",
     parentTaskId: initialData?.parentTaskId || "",
-    isSubTask: initialData?.isSubTask || false
+    isSubTask: initialData?.isSubTask || false,
+    subtaskTitle: initialData?.subtaskTitle || "",
+    subtaskDescription: initialData?.subtaskDescription || "",
+    subtaskStatus: initialData?.subtaskStatus || "pending",
+    subtaskDueDate: initialData?.subtaskDueDate ? format(new Date(initialData.subtaskDueDate), "yyyy-MM-dd") : ""
   })
   
   const [projects, setProjects] = useState([])
@@ -62,7 +66,7 @@ useEffect(() => {
     }
   }
 
-  const handleChange = (field) => (e) => {
+const handleChange = (field) => (e) => {
     const value = field === 'isSubTask' ? e.target.checked : e.target.value
     
     setFormData(prev => ({
@@ -154,10 +158,66 @@ const validateForm = () => {
         <option value="">Select a project (optional)</option>
         {projects.map(project => (
           <option key={project.Id} value={project.Id}>
-            {project.name}
+            {project.title}
           </option>
         ))}
       </Select>
+      
+      <div className="flex items-center space-x-2 p-4 bg-gray-50 rounded-lg">
+        <input
+          type="checkbox"
+          id="isSubTask"
+          checked={formData.isSubTask}
+          onChange={handleChange("isSubTask")}
+          className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500"
+        />
+        <label htmlFor="isSubTask" className="text-sm font-medium text-gray-700">
+          Create as Subtask
+        </label>
+      </div>
+      
+      {formData.isSubTask && (
+        <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h4 className="text-sm font-medium text-blue-900 mb-3">Subtask Details</h4>
+          
+          <Input
+            label="Subtask Title"
+            placeholder="Enter subtask title"
+            value={formData.subtaskTitle}
+            onChange={handleChange("subtaskTitle")}
+            error={errors.subtaskTitle}
+            required={formData.isSubTask}
+          />
+          
+          <Textarea
+            label="Subtask Description"
+            placeholder="Enter subtask description (optional)"
+            value={formData.subtaskDescription}
+            onChange={handleChange("subtaskDescription")}
+            rows={3}
+          />
+          
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              label="Subtask Status"
+              value={formData.subtaskStatus}
+              onChange={handleChange("subtaskStatus")}
+            >
+              <option value="pending">Pending</option>
+              <option value="in-progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </Select>
+            
+            <Input
+              label="Subtask Due Date"
+              type="date"
+              value={formData.subtaskDueDate}
+              onChange={handleChange("subtaskDueDate")}
+              error={errors.subtaskDueDate}
+            />
+          </div>
+        </div>
+      )}
       
       <div className="space-y-3">
         <div className="flex items-center gap-3">

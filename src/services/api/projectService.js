@@ -22,7 +22,7 @@ class ProjectService {
     localStorage.setItem(this.storageKey, JSON.stringify(data))
   }
 
-  async getAll() {
+async getAll() {
     return new Promise((resolve) => {
       setTimeout(() => {
         const projects = this.getData()
@@ -45,7 +45,7 @@ class ProjectService {
     })
   }
 
-  async create(projectData) {
+async create(projectData) {
     return new Promise((resolve) => {
       setTimeout(() => {
         const projects = this.getData()

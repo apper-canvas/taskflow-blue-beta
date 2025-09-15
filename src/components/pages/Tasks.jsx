@@ -78,12 +78,18 @@ const sortTasks = (tasksToSort) => {
     setFilteredTasks(sorted)
   }, [tasks, searchQuery, sortBy, sortOrder])
 
-  const handleCreateTask = async (formData) => {
+const handleCreateTask = async (formData) => {
     try {
       const newTask = await taskService.create(formData)
-      setTasks(prev => [newTask, ...prev])
+      // Reload all tasks to get parent-child relationships properly
+      await loadTasks()
       setIsModalOpen(false)
-      toast.success("Task created successfully!")
+      
+      if (formData.isSubTask) {
+        toast.success("Subtask and parent task created successfully!")
+      } else {
+        toast.success("Task created successfully!")
+      }
     } catch (err) {
       toast.error("Failed to create task")
     }
@@ -278,8 +284,7 @@ const handleSortChange = (value) => {
           )}
         </div>
       </div>
-
-      {/* Create Task Modal */}
+{/* Create Task Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
