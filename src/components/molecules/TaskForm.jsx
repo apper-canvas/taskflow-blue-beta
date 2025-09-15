@@ -37,45 +37,50 @@ if (formData.isSubTask) {
     }
   }, [formData.isSubTask])
 
-  // Auto-save parent task when Create as Subtask is checked
-  const handleSubtaskToggle = async (checked) => {
+// Auto-save parent task when Create as Subtask is checked
+  const handleSubtaskToggle = (checked) => {
+    // Immediate state update for UI reactivity
     setFormData(prev => ({ ...prev, isSubTask: checked }))
     
+    // Handle async auto-save logic after state update
     if (checked && formData.title.trim()) {
-      try {
-        // Auto-save current form data as parent task
-        const parentTaskData = {
-          title: formData.title,
-          description: formData.description,
-          dueDate: formData.dueDate,
-          priority: formData.priority,
-          projectId: formData.projectId,
-          isSubTask: false
+      // Use setTimeout to ensure state update completes first
+      setTimeout(async () => {
+        try {
+          // Auto-save current form data as parent task
+          const parentTaskData = {
+            title: formData.title,
+            description: formData.description,
+            dueDate: formData.dueDate,
+            priority: formData.priority,
+            projectId: formData.projectId,
+            isSubTask: false
+          }
+          
+          const result = await taskService.create(parentTaskData)
+          
+          // Update parent tasks list and select the newly created parent
+          await loadParentTasks()
+          setFormData(prev => ({ 
+            ...prev, 
+            parentTaskId: result.parentTask.Id.toString(),
+            title: "", // Clear title for subtask
+            description: "" // Clear description for subtask
+          }))
+          
+          // Show success message
+          if (window.toast) {
+            window.toast.success("Parent task auto-saved successfully!")
+          }
+        } catch (error) {
+          console.error('Failed to auto-save parent task:', error)
+          if (window.toast) {
+            window.toast.error("Failed to auto-save parent task")
+          }
+          // Revert checkbox if auto-save failed
+          setFormData(prev => ({ ...prev, isSubTask: false }))
         }
-        
-        const result = await taskService.create(parentTaskData)
-        
-        // Update parent tasks list and select the newly created parent
-        await loadParentTasks()
-        setFormData(prev => ({ 
-          ...prev, 
-          parentTaskId: result.parentTask.Id.toString(),
-          title: "", // Clear title for subtask
-          description: "" // Clear description for subtask
-        }))
-        
-        // Show success message
-        if (window.toast) {
-          window.toast.success("Parent task auto-saved successfully!")
-        }
-      } catch (error) {
-        console.error('Failed to auto-save parent task:', error)
-        if (window.toast) {
-          window.toast.error("Failed to auto-save parent task")
-        }
-        // Revert checkbox if auto-save failed
-        setFormData(prev => ({ ...prev, isSubTask: false }))
-      }
+      }, 0)
     }
   }
 
