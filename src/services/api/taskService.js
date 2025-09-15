@@ -1,5 +1,4 @@
-import tasksData from "@/services/mockData/tasks.json"
-
+import tasksData from "@/services/mockData/tasks.json";
 class TaskService {
   constructor() {
     this.storageKey = "taskflow_tasks"
@@ -61,13 +60,15 @@ class TaskService {
         const tasks = this.getData()
         const maxId = Math.max(...tasks.map(t => t.Id), 0)
         const newTask = {
-          Id: maxId + 1,
+Id: maxId + 1,
           title: taskData.title,
           description: taskData.description || "",
           dueDate: taskData.dueDate,
           priority: taskData.priority,
           status: "pending",
           projectId: taskData.projectId || null,
+          parentTaskId: taskData.parentTaskId || null,
+          isSubTask: taskData.isSubTask || false,
           createdAt: new Date().toISOString(),
           completedAt: null
         }
@@ -89,12 +90,13 @@ class TaskService {
           return
         }
 
-        const updatedTask = {
+const updatedTask = {
           ...tasks[taskIndex],
           ...taskData,
-          Id: id
+          Id: id,
+          parentTaskId: taskData.parentTaskId || tasks[taskIndex].parentTaskId,
+          isSubTask: taskData.isSubTask !== undefined ? taskData.isSubTask : tasks[taskIndex].isSubTask
         }
-        
         tasks[taskIndex] = updatedTask
         this.saveData(tasks)
         resolve({ ...updatedTask })

@@ -12,7 +12,7 @@ import Error from "@/components/ui/Error"
 import Empty from "@/components/ui/Empty"
 import ApperIcon from "@/components/ApperIcon"
 import { taskService } from "@/services/api/taskService"
-
+import { projectService } from "@/services/api/projectService"
 const Tasks = () => {
   const [tasks, setTasks] = useState([])
   const [filteredTasks, setFilteredTasks] = useState([])
