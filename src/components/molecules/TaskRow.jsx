@@ -5,7 +5,9 @@ import Badge from "@/components/atoms/Badge"
 import { cn } from "@/utils/cn"
 
 const TaskRow = ({ task, onToggleComplete }) => {
-  const isOverdue = isPast(new Date(task.dueDate)) && !isToday(new Date(task.dueDate)) && task.status !== "completed"
+const isOverdue = task.dueDate && !isNaN(new Date(task.dueDate)) 
+    ? isPast(new Date(task.dueDate)) && !isToday(new Date(task.dueDate)) && task.status !== "completed"
+    : false
   
   const getPriorityVariant = (priority) => {
     switch (priority.toLowerCase()) {
@@ -63,7 +65,10 @@ const TaskRow = ({ task, onToggleComplete }) => {
           </p>
         )}
         <div className="flex items-center gap-3 text-xs text-secondary-500">
-          <span>Due: {format(new Date(task.dueDate), "MMM dd, yyyy")}</span>
+<span>Due: {task.dueDate && !isNaN(new Date(task.dueDate)) 
+            ? format(new Date(task.dueDate), "MMM dd, yyyy")
+            : "No due date"
+          }</span>
           <Badge variant={getStatusVariant()}>
             {task.status === "completed" ? "Completed" : isOverdue ? "Overdue" : "Pending"}
           </Badge>
