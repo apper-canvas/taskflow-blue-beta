@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import Select from "@/components/atoms/Select"
 import { toast } from "react-toastify"
 import { motion } from "framer-motion"
 import Button from "@/components/atoms/Button"
@@ -19,7 +20,8 @@ const Tasks = () => {
   const [error, setError] = useState("")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-
+const [sortBy, setSortBy] = useState('createdAt')
+  const [sortOrder, setSortOrder] = useState('desc')
   const loadTasks = async () => {
     try {
       setIsLoading(true)
@@ -37,14 +39,44 @@ const Tasks = () => {
   useEffect(() => {
     loadTasks()
   }, [])
+const sortTasks = (tasksToSort) => {
+    return [...tasksToSort].sort((a, b) => {
+      let aValue, bValue
+      
+      switch (sortBy) {
+        case 'priority':
+          const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 }
+          aValue = priorityOrder[a.priority] || 0
+          bValue = priorityOrder[b.priority] || 0
+          break
+        case 'dueDate':
+          aValue = a.dueDate ? new Date(a.dueDate).getTime() : 0
+          bValue = b.dueDate ? new Date(b.dueDate).getTime() : 0
+          break
+        case 'createdAt':
+          aValue = new Date(a.createdAt).getTime()
+          bValue = new Date(b.createdAt).getTime()
+          break
+        default:
+          return 0
+      }
+      
+      if (sortOrder === 'asc') {
+        return aValue - bValue
+      } else {
+        return bValue - aValue
+      }
+    })
+  }
 
   useEffect(() => {
     const filtered = tasks.filter(task =>
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.description.toLowerCase().includes(searchQuery.toLowerCase())
     )
-    setFilteredTasks(filtered)
-  }, [tasks, searchQuery])
+    const sorted = sortTasks(filtered)
+    setFilteredTasks(sorted)
+  }, [tasks, searchQuery, sortBy, sortOrder])
 
   const handleCreateTask = async (formData) => {
     try {
@@ -89,6 +121,12 @@ const Tasks = () => {
     }).length
 
     return { total: tasks.length, completed, pending, overdue }
+  }
+
+const handleSortChange = (value) => {
+    const [field, order] = value.split('-')
+    setSortBy(field)
+    setSortOrder(order)
   }
 
   const stats = getTaskStats()
@@ -174,13 +212,27 @@ const Tasks = () => {
       </div>
 
       {/* Actions Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <SearchBar
-          onSearch={handleSearch}
-          placeholder="Search tasks..."
-          className="w-full sm:w-96"
-        />
-        <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">
+<div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full lg:w-auto">
+          <SearchBar
+            onSearch={handleSearch}
+            placeholder="Search tasks..."
+            className="w-full sm:w-96"
+          />
+          <Select
+            value={`${sortBy}-${sortOrder}`}
+            onChange={(e) => handleSortChange(e.target.value)}
+            className="w-full sm:w-64"
+          >
+            <option value="createdAt-desc">Newest First</option>
+            <option value="createdAt-asc">Oldest First</option>
+            <option value="priority-desc">Priority: High to Low</option>
+            <option value="priority-asc">Priority: Low to High</option>
+            <option value="dueDate-asc">Due Date: Earliest</option>
+            <option value="dueDate-desc">Due Date: Latest</option>
+          </Select>
+        </div>
+        <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 w-full sm:w-auto">
           <ApperIcon name="Plus" size={16} />
           Add Task
         </Button>
@@ -214,7 +266,7 @@ const Tasks = () => {
             )
           ) : (
             <div className="space-y-3">
-              {filteredTasks.map((task) => (
+{filteredTasks.map((task) => (
                 <TaskRow
                   key={task.Id}
                   task={task}
