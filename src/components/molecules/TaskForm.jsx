@@ -8,11 +8,19 @@ import { projectService } from "@/services/api/projectService"
 import { taskService } from "@/services/api/taskService"
 const TaskForm = ({ onSubmit, onCancel, initialData = null }) => {
 const [formData, setFormData] = useState({
+    // Parent task fields (used when creating parent task automatically)
     title: initialData?.title || "",
     description: initialData?.description || "",
     dueDate: initialData?.dueDate ? format(new Date(initialData.dueDate), "yyyy-MM-dd") : "",
     priority: initialData?.priority || "Medium",
     projectId: initialData?.projectId || "",
+    // Subtask specific fields
+    subtask: {
+      title: initialData?.isSubTask ? initialData?.title || "" : "",
+      description: initialData?.isSubTask ? initialData?.description || "" : "",
+      dueDate: initialData?.isSubTask && initialData?.dueDate ? format(new Date(initialData.dueDate), "yyyy-MM-dd") : "",
+      priority: initialData?.isSubTask ? initialData?.priority || "Medium" : "Medium"
+    },
     parentTaskId: initialData?.parentTaskId || "",
     isSubTask: initialData?.isSubTask || false
   })
@@ -63,9 +71,14 @@ if (formData.isSubTask) {
           await loadParentTasks()
           setFormData(prev => ({ 
             ...prev, 
-parentTaskId: result.parentTask?.Id?.toString() ?? "",
-            title: "", // Clear title for subtask
-            description: "" // Clear description for subtask
+            parentTaskId: result.parentTask?.Id?.toString() ?? "",
+            // Keep parent task data for display, initialize subtask fields
+            subtask: {
+              title: "",
+              description: "",
+              dueDate: "",
+              priority: "Medium"
+            }
           }))
           
           // Show success message
@@ -112,10 +125,22 @@ parentTaskId: result.parentTask?.Id?.toString() ?? "",
 const handleChange = (field) => (e) => {
     const value = e.target.value
     
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
+    // Handle nested subtask fields
+    if (field.startsWith('subtask.')) {
+      const subtaskField = field.replace('subtask.', '')
+      setFormData(prev => ({
+        ...prev,
+        subtask: {
+          ...prev.subtask,
+          [subtaskField]: value
+        }
+      }))
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [field]: value
+      }))
+    }
     
     if (errors[field]) {
       setErrors(prev => ({
@@ -155,36 +180,40 @@ const validateForm = () => {
   return (
 <form onSubmit={handleSubmit} className="space-y-4">
       <Input
-        label="Task Title"
-        placeholder="Enter task title"
+        label={formData.isSubTask ? "Parent Task Title" : "Task Title"}
+        placeholder={formData.isSubTask ? "Enter parent task title" : "Enter task title"}
         value={formData.title}
         onChange={handleChange("title")}
         error={errors.title}
+        disabled={formData.isSubTask}
         required
       />
       
       <Textarea
-        label="Description"
-        placeholder="Enter task description (optional)"
+        label={formData.isSubTask ? "Parent Task Description" : "Description"}
+        placeholder={formData.isSubTask ? "Enter parent task description (optional)" : "Enter task description (optional)"}
         value={formData.description}
         onChange={handleChange("description")}
+        disabled={formData.isSubTask}
         rows={3}
       />
       
-      <div className="grid grid-cols-2 gap-4">
+<div className="grid grid-cols-2 gap-4">
         <Input
-          label="Due Date"
+          label={formData.isSubTask ? "Parent Task Due Date" : "Due Date"}
           type="date"
           value={formData.dueDate}
           onChange={handleChange("dueDate")}
           error={errors.dueDate}
+          disabled={formData.isSubTask}
           required
         />
         
         <Select
-          label="Priority"
+          label={formData.isSubTask ? "Parent Task Priority" : "Priority"}
           value={formData.priority}
           onChange={handleChange("priority")}
+          disabled={formData.isSubTask}
         >
           <option value="High">High</option>
           <option value="Medium">Medium</option>
@@ -220,21 +249,63 @@ const validateForm = () => {
       </div>
       
 {formData.isSubTask && (
-        <Select
-          label="Parent Task"
-          value={formData.parentTaskId}
-          onChange={handleChange("parentTaskId")}
-          error={errors.parentTaskId}
-          disabled={isLoadingParentTasks}
-          required
-        >
-          <option value="">Select parent task</option>
-          {parentTasks.map(task => (
-            <option key={task.Id} value={task.Id}>
-              {task.title}
-            </option>
-          ))}
-        </Select>
+        <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h3 className="text-sm font-semibold text-blue-800 mb-3">Subtask Details</h3>
+          
+          <Input
+            label="Subtask Title"
+            placeholder="Enter subtask title"
+            value={formData.subtask.title}
+            onChange={handleChange("subtask.title")}
+            error={errors["subtask.title"]}
+            required
+          />
+          
+          <Textarea
+            label="Subtask Description"
+            placeholder="Enter subtask description (optional)"
+            value={formData.subtask.description}
+            onChange={handleChange("subtask.description")}
+            rows={3}
+          />
+          
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Subtask Due Date"
+              type="date"
+              value={formData.subtask.dueDate}
+              onChange={handleChange("subtask.dueDate")}
+              error={errors["subtask.dueDate"]}
+              required
+            />
+            
+            <Select
+              label="Subtask Priority"
+              value={formData.subtask.priority}
+              onChange={handleChange("subtask.priority")}
+            >
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </Select>
+          </div>
+          
+          <Select
+            label="Parent Task"
+            value={formData.parentTaskId}
+            onChange={handleChange("parentTaskId")}
+            error={errors.parentTaskId}
+            disabled={isLoadingParentTasks}
+            required
+          >
+            <option value="">Select parent task</option>
+            {parentTasks.map(task => (
+              <option key={task.Id} value={task.Id}>
+                {task.title}
+              </option>
+            ))}
+          </Select>
+        </div>
       )}
       
       <div className="flex justify-end gap-3 pt-4">
